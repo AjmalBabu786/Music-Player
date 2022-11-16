@@ -5,7 +5,6 @@ import 'package:music_player/models/myMusic.dart';
 
 import 'package:flutter/material.dart';
 import 'package:music_player/widgets/common_widgets.dart';
-import 'package:music_player/widgets/home_widgets.dart';
 
 import '../widgets/colorApp.dart';
 

@@ -8,3 +8,7 @@ Box<MyMusic> getSongModelBox() {
 Box<List> getPlaylistBox() {
   return Hive.box<List>('playlist');
 }
+
+Box<List> getCreatePlaylistBox() {
+  return Hive.box<List>('playlistcreate');
+}

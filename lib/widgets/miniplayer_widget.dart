@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:music_player/models/myMusic.dart';
-import 'package:music_player/screens/now_play.dart';
+
+import 'package:music_player/screens/nowplay.dart';
+import 'package:music_player/widgets/recent_widget.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import 'package:flutter/material.dart';
@@ -22,6 +24,12 @@ class Miniplayer extends StatefulWidget {
 }
 
 class _MiniplayerState extends State<Miniplayer> {
+  Audio find(List<Audio> source, String fromPath) {
+    return source.firstWhere((song) {
+      return song.path == fromPath;
+    });
+  }
+
   AssetsAudioPlayer myAudioPlayer = AssetsAudioPlayer.withId('0');
   convertsongs() {
     log('converted');
@@ -44,18 +52,8 @@ class _MiniplayerState extends State<Miniplayer> {
         autoStart: true,
         Playlist(audios: widget.mysongs, startIndex: widget.index));
   }
-  // openAudio() async {
-  //   await widget.audioPlayer.open(
-  //     Playlist(
-  //       audios: assetsongList,
-  //       startIndex: widget.index,
-  //     ),
-  //     autoStart: true,
-  //   );
-  // }
 
   List<Audio> assetsongList = [];
-  // List<String> assetsongimage = AssetAudioList.imageListReturn();
 
   @override
   void initState() {
@@ -69,15 +67,24 @@ class _MiniplayerState extends State<Miniplayer> {
 
   @override
   Widget build(BuildContext context) {
-    return myAudioPlayer.builderRealtimePlayingInfos(
-      builder: (context, realtimePlayingInfos) {
-        return ListTile(
+    return myAudioPlayer.builderCurrent(
+        builder: (BuildContext context, Playing playing) {
+      final myAudio = find(widget.mysongs, playing.audio.assetAudioPath);
+      addRecentplay(id: myAudio.metas.id!);
+      return ListTile(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => Nowplay(
-                index: widget.index,
-                songlists: widget.mysongs,
-              ),
+            // Navigator.of(context).push(MaterialPageRoute(
+            //   builder: (context) => Now_playing(
+            //       // index: widget.index,
+            //       // songlists: widget.mysongs,
+            //       ),
+            // ));
+
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return Text('data');
+                // return const NowPlayingScreen();
+              },
             ));
           },
           leading: Container(
@@ -94,10 +101,12 @@ class _MiniplayerState extends State<Miniplayer> {
                 type: ArtworkType.AUDIO),
           ),
           title: Text(
-            widget.mysongs[widget.index].metas.title!,
+            myAudioPlayer.getCurrentAudioTitle,
+            // widget.mysongs[widget.index].metas.title!,
+
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Text(widget.mysongs[widget.index].metas.artist!,
+          subtitle: Text(myAudioPlayer.getCurrentAudioArtist,
               overflow: TextOverflow.ellipsis),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -107,71 +116,26 @@ class _MiniplayerState extends State<Miniplayer> {
                     myAudioPlayer.previous();
                   },
                   icon: const Icon(Icons.skip_previous)),
-              IconButton(
-                  onPressed: () {
-                    myAudioPlayer.playOrPause();
-                  },
-                  icon: Icon(
-                    realtimePlayingInfos.isPlaying
-                        ? Icons.pause_circle
-                        : Icons.play_circle,
-                  )),
+              myAudioPlayer.builderRealtimePlayingInfos(
+                  builder: (context, realtimePlayingInfos) {
+                return IconButton(
+                    onPressed: () {
+                      myAudioPlayer.playOrPause();
+                    },
+                    icon: Icon(
+                      realtimePlayingInfos.isPlaying
+                          ? Icons.pause_circle
+                          : Icons.play_circle,
+                    ));
+              }),
               IconButton(
                   onPressed: () {
                     myAudioPlayer.next();
                   },
                   icon: const Icon(Icons.skip_next_sharp)),
             ],
-          ),
-        );
-      },
-      // child: ListTile(
-      //   onTap: () {
-      //     Navigator.of(context).push(MaterialPageRoute(
-      //       builder: (context) => Nowplay(
-      //         index: widget.index,
-      //         songlists: widget.mysongs,
-      //       ),
-      //     ));
-      //   },
-      //   leading: Container(
-      //     height: 80,
-      //     width: 60,
-      //     child: QueryArtworkWidget(
-      //         nullArtworkWidget: ClipRRect(
-      //           child: Image.asset('asset/images/Defaultimages.jpg'),
-      //         ),
-      //         id: int.parse(widget.songlists[widget.index].id),
-      //         type: ArtworkType.AUDIO),
-      //   ),
-      //   title: Text(
-      //     widget.mysongs[widget.index].metas.title!,
-      //     overflow: TextOverflow.ellipsis,
-      //   ),
-      //   subtitle: Text(widget.mysongs[widget.index].metas.artist!,
-      //       overflow: TextOverflow.ellipsis),
-      //   trailing: Row(
-      //     mainAxisSize: MainAxisSize.min,
-      //     children: [
-      //       IconButton(
-      //           onPressed: () {
-      //             myAudioPlayer.previous();
-      //           },
-      //           icon: const Icon(Icons.skip_previous)),
-      //       IconButton(
-      //           onPressed: () {
-      //             myAudioPlayer.playOrPause();
-      //           },
-      //           icon: const Icon(Icons.pause_circle)),
-      //       IconButton(
-      //           onPressed: () {
-      //             myAudioPlayer.next();
-      //           },
-      //           icon: const Icon(Icons.skip_next_sharp)),
-      //     ],
-      //   ),
-      // ),
-    );
+          ));
+    });
   }
 }
 

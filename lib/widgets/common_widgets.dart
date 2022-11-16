@@ -1,11 +1,18 @@
+import 'dart:developer';
+import 'dart:ffi';
+
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:music_player/models/myMusic.dart';
+import 'package:music_player/screens/nowplay.dart';
+import 'package:music_player/widgets/colorApp.dart';
 import 'package:music_player/widgets/miniplayer_widget.dart';
+import 'package:music_player/widgets/playlist.dart';
+import 'package:music_player/widgets/recent_widget.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import '../DataBase/DataBase_functions.dart';
-import 'colorApp.dart';
-import 'home_widgets.dart';
+
 import 'package:flutter/material.dart';
 
 import 'favoutite_widget.dart';
@@ -28,21 +35,40 @@ class ListtileWidget extends StatefulWidget {
 }
 
 class _ListtileWidgetState extends State<ListtileWidget> {
+  Box<List> playlistadd = getCreatePlaylistBox();
+  List<Audio> samplist = [];
+
+  TextEditingController mytextController = TextEditingController();
   @override
   void initState() {
     favouriteiconchange(id: widget.songList[widget.index].id);
     super.initState();
   }
 
+  convertsongs() {
+    log('converted');
+    for (var song in widget.songList) {
+      Audio music = Audio.file(song.url,
+          metas: Metas(
+            artist: song.artist,
+            title: song.title,
+            id: song.id,
+          ));
+
+      samplist.add(music);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    convertsongs();
+    final List<String> playlistKeys = playlistadd.keys.toList().cast<String>();
     return ListTile(
       onTap: () {
-        miniplayersheet(
-          context: context,
-          index: widget.index,
-          songs: widget.songList,
-        );
+        miniplayersamp(
+            context: context, index: widget.index, songlist: samplist);
+
+        addRecentplay(id: widget.songList[widget.index].id);
       },
       leading: Container(
         height: 80,
@@ -76,111 +102,49 @@ class _ListtileWidgetState extends State<ListtileWidget> {
           color: Colors.white,
         ),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          favouriteIcons(
-            icons: Icons.favorite,
-            iconColor:
-                favouriteiconchange(id: widget.songList[widget.index].id),
-            iconSize: 30,
-            onpressed: () {
-              setState(() {
-                addfavouritesong(id: widget.songList[widget.index].id);
-                favouriteiconchange(id: widget.songList[widget.index].id);
-              });
-            },
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          favouriteIcons(
-            icons: Icons.playlist_add,
-            iconColor: Colors.white,
-            iconSize: 30,
-            onpressed: () {
-              // playLIstAddModelSheet(
-              //     context: context,
-              //     songName: assetsongList[index].metas.title!,
-              //     artistName: assetsongList[index].metas.artist!,
-              //     songImage: assetsongimage[index]);
-            },
-          ),
-        ],
-      ),
+      trailing: StatefulBuilder(builder: (context, setstate) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            favouriteIcons(
+              icons: Icons.favorite,
+              iconColor:
+                  favouriteiconchange(id: widget.songList[widget.index].id),
+              iconSize: 30,
+              onpressed: () {
+                setstate(() {
+                  addfavouritesong(
+                      id: widget.songList[widget.index].id, context: context);
+                  favouriteiconchange(id: widget.songList[widget.index].id);
+                  setState(() {});
+                });
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            favouriteIcons(
+              icons: Icons.playlist_add,
+              iconColor: Colors.white,
+              iconSize: 30,
+              onpressed: () {
+                playLIstAddModelSheet(
+                    id: widget.songList[widget.index].id,
+                    mytextController: mytextController,
+                    context: context,
+                    songName: widget.songList[widget.index].title,
+                    artistName: widget.songList[widget.index].artist);
+              },
+            ),
+          ],
+        );
+      }),
     );
     ;
   }
 }
 
 // ***************PlaylistAdd BottomSheet Function*************
-playLIstAddModelSheet(
-    {required BuildContext context,
-    required String songName,
-    required String artistName,
-    required String songImage}) {
-  return showModalBottomSheet(
-    backgroundColor: Colors.transparent,
-    context: context,
-    builder: (context) {
-      return Container(
-        decoration: const BoxDecoration(
-          color: Color.fromARGB(255, 27, 33, 43),
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(50), topRight: Radius.circular(50)),
-        ),
-        height: 300,
-        child: Column(
-          children: [
-            Container(
-                height: 150,
-                width: 150,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 80,
-                      width: 80,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                              image: AssetImage(
-                                songImage,
-                              ),
-                              fit: BoxFit.cover)),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      songName,
-                      style: const TextStyle(fontSize: 17, color: Colors.white),
-                    ),
-                    Text(
-                      artistName,
-                      style: const TextStyle(fontSize: 12, color: Colors.white),
-                    ),
-                  ],
-                )),
-            ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(10),
-                  backgroundColor: Colormyapp.maincolor,
-                ),
-                onPressed: () {
-                  createPLaylistTextField(
-                      context: context,
-                      alertTitle: 'Create PLaylist',
-                      textLabel: 'Enter Name');
-                },
-                icon: const Icon(Icons.playlist_play_sharp),
-                label: const Text('CreatePlaylist'))
-          ],
-        ),
-      );
-    },
-  );
-}
 
 // ***************Playlist Add Function***************
 songlisttile(
@@ -260,101 +224,128 @@ songlisttile(
 
 // ***********PLAYLIST CTRATE DIALOGBOX***********
 
-playlistCreateAlertBox({required BuildContext context}) {
-  return showDialog(
+//Mini player samp
+
+miniplayersamp(
+    {required BuildContext context,
+    required int index,
+    required List<Audio> songlist}) {
+  AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer.withId('0');
+  showBottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+      ),
+      backgroundColor: const Color.fromARGB(255, 150, 152, 179),
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colormyapp.maincolor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Create playlist',
-            style: TextStyle(
-                color: Colormyapp.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colormyapp.white, fontSize: 15),
+      builder: (context) {
+        //find functoion
+        Audio find(List<Audio> source, String fromPath) {
+          return source.firstWhere((song) {
+            return song.path == fromPath;
+          });
+        }
+
+        //play function
+        assetsAudioPlayer.open(Playlist(audios: songlist, startIndex: index));
+
+        //
+        return GestureDetector(
+          onTap: (() {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => NowPlayingScreen(
+                      assetsAudioPlayer: assetsAudioPlayer,
+                      index: index,
+                      songList: songlist,
+                    )));
+          }),
+          child: assetsAudioPlayer.builderCurrent(
+              builder: (BuildContext context, Playing playing) {
+            final myAudio = find(songlist, playing.audio.assetAudioPath);
+            addRecentplay(id: myAudio.metas.id!);
+            return ListTile(
+              leading: Container(
+                height: 80,
+                width: 60,
+                child: QueryArtworkWidget(
+                    nullArtworkWidget: ClipOval(
+                      child: Image.asset(
+                        'asset/images/DefaultNew.webp',
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                    id: int.parse(myAudio.metas.id!),
+                    type: ArtworkType.AUDIO),
               ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'Confirm',
-                style: TextStyle(color: Colormyapp.white, fontSize: 15),
+              title: Text(
+                '${myAudio.metas.title}',
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              subtitle: Text(
+                '${myAudio.metas.artist}',
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  myAudio == songlist[0]
+                      ? SizedBox()
+                      : GestureDetector(
+                          onTap: () async {
+                            await Future.delayed(Duration(milliseconds: 500));
+                            assetsAudioPlayer.previous();
+                          },
+                          child: Icon(
+                            Icons.skip_previous_outlined,
+                            size: 30,
+                          )),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  assetsAudioPlayer.builderIsPlaying(
+                      builder: (context, isPlaying) {
+                    return isPlaying
+                        ? GestureDetector(
+                            onTap: () {
+                              assetsAudioPlayer.pause();
+                            },
+                            child: Icon(
+                              Icons.pause_circle_filled_sharp,
+                              size: 30,
+                            ),
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              assetsAudioPlayer.play();
+                            },
+                            child: Icon(
+                              Icons.play_circle_fill_sharp,
+                              size: 30,
+                            ),
+                          );
+                  }),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  myAudio == songlist[songlist.length - 1]
+                      ? SizedBox()
+                      : GestureDetector(
+                          onTap: () async {
+                            await Future.delayed(
+                                const Duration(milliseconds: 500));
+                            assetsAudioPlayer.next();
+                          },
+                          child: const Icon(
+                            Icons.skip_next_outlined,
+                            size: 30,
+                          )),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                ],
+              ),
+            );
+          }),
         );
       });
-}
-
-// ***********PLAYLIST TEXTFIED ADD PLAYLIST************
-
-createPLaylistTextField({
-  required BuildContext context,
-  required String alertTitle,
-  required String textLabel,
-}) {
-  return showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        backgroundColor: Colormyapp.maincolor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          alertTitle,
-          style: TextStyle(color: Colormyapp.white),
-        ),
-        content: TextFormField(
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-            labelText: textLabel,
-            labelStyle: const TextStyle(color: Colors.grey),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colormyapp.white, fontSize: 15),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              return;
-            },
-            child: Text(
-              'Confirm',
-              style: TextStyle(color: Colormyapp.white, fontSize: 15),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-Color favouriteiconchange({required String id}) {
-  final Box<MyMusic> hiveAllSongs = getSongModelBox();
-  final List<MyMusic> allSongs = hiveAllSongs.values.toList();
-  final Box<List> playlistsong = getPlaylistBox();
-  final List<MyMusic> favouritelist =
-      playlistsong.get('favourite')!.toList().cast<MyMusic>();
-
-  MyMusic favsongs = allSongs.firstWhere((song) => song.id.contains(id));
-  return favouritelist.where((song) => song.id == favsongs.id).isEmpty
-      ? Colors.white
-      : Colors.red;
 }

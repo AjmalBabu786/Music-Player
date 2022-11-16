@@ -3,13 +3,19 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:music_player/DataBase/DataBase_functions.dart';
 import 'package:music_player/models/myMusic.dart';
 import 'package:music_player/screens/favourite.dart';
+import 'package:music_player/screens/most_play.dart';
+
+import 'package:music_player/screens/recetly_played.dart';
 import 'package:music_player/screens/searchscreen.dart';
 import 'package:music_player/widgets/common_widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/colorApp.dart';
 import '../widgets/home_widgets.dart';
 
 import 'package:flutter/material.dart';
+
+import 'playlist_screen.dart';
 
 ValueNotifier<bool> scrollNotifier = ValueNotifier(true);
 
@@ -55,10 +61,10 @@ class _home_screemState extends State<home_screem> {
             child: IconButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => search_screen(),
+                  builder: (context) => const search_screen(),
                 ));
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.search,
                 size: 30,
               ),
@@ -66,7 +72,7 @@ class _home_screemState extends State<home_screem> {
           )
         ],
       ),
-      body: Column(
+      body: ListView(
         children: [
           Column(
             children: [
@@ -87,6 +93,7 @@ class _home_screemState extends State<home_screem> {
               ),
               Container(
                 height: 150,
+                // **************************************************************
                 child: Row(
                   children: [
                     Expanded(
@@ -98,9 +105,9 @@ class _home_screemState extends State<home_screem> {
                             libraryText: 'Playlist',
                             bgimage: 'asset/images/most played.jpg',
                             librartontap: () {
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //   builder: (context) => const Playlist_screen(),
-                              // ));
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const Playlist_screen(),
+                              ));
                             },
                           ),
                           listviewontainer(
@@ -109,7 +116,8 @@ class _home_screemState extends State<home_screem> {
                             bgimage: 'asset/images/new one 1.jpg',
                             librartontap: () {
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => favourite_screen()));
+                                  builder: (context) =>
+                                      const favourite_screen()));
                             },
                           ),
                           listviewontainer(
@@ -117,9 +125,9 @@ class _home_screemState extends State<home_screem> {
                             libraryText: 'Most Played',
                             bgimage: 'asset/images/favorite.jpg',
                             librartontap: () {
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //   builder: (context) => Most_played(),
-                              // ));
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => Most_played(),
+                              ));
                             },
                           ),
                           listviewontainer(
@@ -127,9 +135,9 @@ class _home_screemState extends State<home_screem> {
                             libraryText: 'Recently ',
                             bgimage: 'asset/images/zayn-malik.jpg',
                             librartontap: () {
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //   builder: (context) => Recenty_played(),
-                              // ));
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const Recenty_played(),
+                              ));
                             },
                           ),
                         ],
@@ -156,18 +164,22 @@ class _home_screemState extends State<home_screem> {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                return ListtileWidget(
-                  context: context,
-                  index: index,
-                  songList: myAllSongs,
+          ValueListenableBuilder(
+              valueListenable: hiveAllSongs.listenable(),
+              builder: (BuildContext context, Box<MyMusic> value, Widget? _) {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const ScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return ListtileWidget(
+                      context: context,
+                      index: index,
+                      songList: myAllSongs,
+                    );
+                  },
+                  itemCount: myAllSongs.length,
                 );
-              },
-              itemCount: myAllSongs.length,
-            ),
-          ),
+              }),
         ],
       ),
     );

@@ -1,89 +1,70 @@
 import 'dart:developer';
 
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:music_player/DataBase/DataBase_functions.dart';
-import 'package:music_player/models/myMusic.dart';
-import 'package:music_player/widgets/common_widgets.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-
-import 'miniplayer_widget.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player/screens/splash_screen.dart';
+import 'package:music_player/settings/about.dart';
+import 'package:music_player/settings/privacyPolicy.dart';
+import 'package:music_player/settings/termsAndConditions.dart';
+import 'package:music_player/widgets/colorApp.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-allSongs({
-  required List<MyMusic> songlist,
-  required int index,
-  required BuildContext context,
-}) {
-  return ListTile(
-    onTap: () {
-      miniplayersheet(context: context, index: index, songs: songlist);
-      log('ontap');
-    },
-    leading: SizedBox(
-      height: 80,
-      width: 60,
-      child: QueryArtworkWidget(
-          nullArtworkWidget: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: Image.asset(
-              'asset/images/DefaultNew.webp',
-              fit: BoxFit.fill,
+class settingsNotification extends StatefulWidget {
+  settingsNotification({
+    super.key,
+    required this.text,
+    required this.firstIcon,
+    this.lastIcon,
+  });
+  String text;
+  IconData firstIcon;
+  IconData? lastIcon;
+
+  @override
+  State<settingsNotification> createState() => _settingsNotificationState();
+}
+
+class _settingsNotificationState extends State<settingsNotification> {
+  final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer.withId('0');
+
+  Future setnotification({required bool myvalue}) async {
+    final SharedPreferences shareprefrnc =
+        await SharedPreferences.getInstance();
+    await shareprefrnc.setBool('notifications', myvalue);
+    setState(() {
+      mynotificatinon = myvalue;
+      mynotificatinon!
+          ? audioPlayer.showNotification = true
+          : audioPlayer.showNotification = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        widget.firstIcon,
+        color: Colors.white,
+      ),
+      title: Text(
+        widget.text,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+      ),
+      trailing: widget.lastIcon != null
+          ? Icon(
+              widget.lastIcon,
+              color: Colors.white,
+            )
+          : Switch(
+              inactiveTrackColor: Colors.blue,
+              activeTrackColor: Colors.red,
+              value: mynotificatinon!,
+              onChanged: (value) async {
+                await setnotification(myvalue: value);
+              },
             ),
-          ),
-          id: int.parse(songlist[index].id),
-          type: ArtworkType.AUDIO),
-    ),
-    title: Text(
-      songlist[index].title,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 17.0,
-        color: Colors.white,
-      ),
-    ),
-    subtitle: Text(
-      songlist[index].artist,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 12.0,
-        color: Colors.white,
-      ),
-    ),
-    trailing: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        homeScreenIcons(
-          icons: Icons.favorite,
-          iconColor: favouriteiconchange(id: songlist[index].id),
-          iconSize: 30,
-          onpressed: () {
-            addfavouritesong(
-              id: songlist[index].id,
-            );
-            log('function');
-          },
-        ),
-        const SizedBox(
-          width: 10,
-        ),
-        homeScreenIcons(
-          icons: Icons.playlist_add,
-          iconColor: Colors.white,
-          iconSize: 30,
-          onpressed: () {
-            // playLIstAddModelSheet(
-            //     context: context,
-            //     songName: assetsongList[index].metas.title!,
-            //     artistName: assetsongList[index].metas.artist!,
-            //     songImage: assetsongimage[index]);
-            // Navigator.of(context).push(MaterialPageRoute(builder: (context) => ,))
-          },
-        ),
-      ],
-    ),
-  );
+    );
+  }
 }
 
 listviewontainer(
@@ -128,25 +109,13 @@ listviewontainer(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20)),
             ),
-            margin: EdgeInsets.symmetric(horizontal: 6),
+            margin: const EdgeInsets.symmetric(horizontal: 6),
             height: size.height * 0.04,
             width: 60,
           ))
     ],
   );
 }
-
-// goToNowPlay(BuildContext context, String imageName, int index, String songName,
-//     String artistName) async {
-//   Navigator.of(context).push(MaterialPageRoute(
-//     builder: (context) => Nowplay(
-//       ArtistName: artistName,
-//       songName: songName,
-//       imageName: imageName,
-//       index: index,
-//     ),
-//   ));
-// }
 
 homeScreenIcons(
     {required IconData icons,
@@ -170,37 +139,78 @@ Widget drawersettings(BuildContext context) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(bottomRight: Radius.circular(300)),
     ),
-    backgroundColor: Color.fromARGB(255, 19, 10, 40),
+    backgroundColor: Colormyapp.maincolor,
     child: Container(
       child: Column(
         children: [
-          Image.asset('asset/images/logo.webp'),
-          settingsLIsttile(
-            text: 'About',
-            firstIcon: Icons.person,
-            lastIcon: Icons.arrow_forward_ios_rounded,
+          Image.asset(
+            'asset/images/Microphone_and_headset_logo_-_Made_with_PosterMyWall-removebg-preview.png',
+            width: size.width * 0.5,
           ),
-          settingsLIsttile(
-              text: 'Notifivation', firstIcon: Icons.notifications_active),
-          settingsLIsttile(
-            text: 'Privacy&Policy',
-            firstIcon: Icons.policy_rounded,
-            lastIcon: Icons.arrow_forward_ios_rounded,
+          GestureDetector(
+            onTap: () {
+              aboutMeFunction(context: context);
+            },
+            child: settingsNotification(
+              text: 'About Me',
+              firstIcon: Icons.person,
+              lastIcon: Icons.arrow_forward_ios_rounded,
+            ),
           ),
-          settingsLIsttile(
-            text: 'Terms&Conditions',
-            firstIcon:
-                Icons.signal_cellular_connected_no_internet_0_bar_outlined,
-            lastIcon: Icons.arrow_forward_ios_rounded,
+          settingsNotification(
+              text: 'Notification', firstIcon: Icons.notifications_active),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PrivacyAndPolicy(),
+              ));
+            },
+            child: settingsNotification(
+              text: 'Privacy&Policy',
+              firstIcon: Icons.policy_rounded,
+              lastIcon: Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => TermsAndCondition(),
+              ));
+            },
+            child: settingsNotification(
+              text: 'Terms&Conditions',
+              firstIcon:
+                  Icons.signal_cellular_connected_no_internet_0_bar_outlined,
+              lastIcon: Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => LicensePage(
+                    applicationIcon: Image.asset(
+                      'asset/images/new logo png.png',
+                      height: size.height * 0.5,
+                      width: size.width * 0.8,
+                    ),
+                    applicationVersion: '1.0.0',
+                    applicationLegalese: 'AjmalShaz'),
+              ));
+            },
+            child: settingsNotification(
+              text: 'License',
+              firstIcon: Icons.warning,
+              lastIcon: Icons.arrow_forward_ios_rounded,
+            ),
           ),
           SizedBox(
             height: size.height * 0.06,
           ),
-          Text(
+          const Text(
             'Version',
             style: TextStyle(color: Color.fromARGB(255, 122, 107, 107)),
           ),
-          Text(
+          const Text(
             '1.0.0',
             style: TextStyle(color: Color.fromARGB(255, 122, 107, 107)),
           ),
@@ -208,50 +218,4 @@ Widget drawersettings(BuildContext context) {
       ),
     ),
   );
-}
-
-settingsLIsttile(
-    {required String text,
-    required IconData firstIcon,
-    IconData? lastIcon,
-    bool trueORfalse = true}) {
-  return ListTile(
-    leading: Icon(
-      firstIcon,
-      color: Colors.white,
-    ),
-    title: Text(
-      text,
-      style: TextStyle(color: Colors.white, fontSize: 18),
-    ),
-    trailing: lastIcon != null
-        ? Icon(
-            lastIcon,
-            color: Colors.white,
-          )
-        : Switch(
-            value: trueORfalse,
-            onChanged: (value) {
-              trueORfalse = value;
-            },
-          ),
-  );
-}
-
-addfavouritesong({required String id}) async {
-  final Box<MyMusic> hiveAllSongs = getSongModelBox();
-  final List<MyMusic> allSongs = hiveAllSongs.values.toList();
-  final Box<List> playlistsong = getPlaylistBox();
-  final List<MyMusic> favouritelist =
-      playlistsong.get('favourite')!.toList().cast<MyMusic>();
-  final selectedsong = allSongs.firstWhere((song) => song.id.contains(id));
-  if (favouritelist.where((song) => selectedsong.id == song.id).isEmpty) {
-    favouritelist.add(selectedsong);
-    await playlistsong.put('favourite', favouritelist);
-    log('added');
-  } else {
-    favouritelist.remove(selectedsong);
-    await playlistsong.put('favourite', favouritelist);
-    log('removed');
-  }
 }

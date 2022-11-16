@@ -11,6 +11,7 @@ Future<void> main() async {
   }
   await Hive.openBox<MyMusic>('mysongs');
   await Hive.openBox<List>('playlist');
+  await Hive.openBox<List>('playlistcreate');
   runApp(const MyMusicPlayer());
 }
 

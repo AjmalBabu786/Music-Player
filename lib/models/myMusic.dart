@@ -11,10 +11,14 @@ class MyMusic extends HiveObject {
   final String artist;
   @HiveField(3)
   final String url;
+  @HiveField(4)
+  int? count = 0;
 
-  MyMusic(
-      {required this.id,
-      required this.title,
-      required this.artist,
-      required this.url});
+  MyMusic({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.url,
+    required this.count,
+  });
 }

@@ -1,48 +1,52 @@
-// import 'package:assets_audio_player/assets_audio_player.dart';
-// import '../assetsAudio.dart';
-// import '../widgets/colorApp.dart';
-// import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:music_player/DataBase/DataBase_functions.dart';
+import 'package:music_player/models/myMusic.dart';
+import 'package:music_player/widgets/now_play_widget.dart';
 
-// import '../widgets/common_widgets.dart';
+import '../widgets/colorApp.dart';
+import 'package:flutter/material.dart';
 
-// class Recenty_played extends StatefulWidget {
-//   const Recenty_played({super.key});
+import '../widgets/common_widgets.dart';
 
-//   @override
-//   State<Recenty_played> createState() => _Recenty_playedState();
-// }
+class Recenty_played extends StatefulWidget {
+  const Recenty_played({super.key});
 
-// class _Recenty_playedState extends State<Recenty_played> {
-//   List<Audio> assetsongList = AssetAudioList.audioListReturn();
-//   List<String> assetsongimage = AssetAudioList.imageListReturn();
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//         backgroundColor: Colormyapp.maincolor,
-//         appBar: AppBar(
-//           centerTitle: true,
-//           titleTextStyle:
-//               const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-//           backgroundColor: Colormyapp.maincolor,
-//           title: Text('Recently Played'),
-//         ),
-//         body: Column(
-//           children: [
-//             Expanded(
-//               child: ListView.builder(
-//                 itemBuilder: (context, index) {
-//                   return songlisttile(
-//                       index: index,
-//                       songname: assetsongList[index].metas.title!,
-//                       artist: assetsongList[index].metas.artist!,
-//                       songimage: assetsongimage[index],
-//                       context: context,
-//                       iconolor: Colors.white);
-//                 },
-//                 itemCount: assetsongimage.length,
-//               ),
-//             )
-//           ],
-//         ));
-//   }
-// }
+  @override
+  State<Recenty_played> createState() => _Recenty_playedState();
+}
+
+class _Recenty_playedState extends State<Recenty_played> {
+  Box<MyMusic> allsongs = getSongModelBox();
+  Box<List> playlist = getPlaylistBox();
+
+  @override
+  Widget build(BuildContext context) {
+    List<MyMusic> recentlysonglist =
+        playlist.get('recently')!.toList().cast<MyMusic>();
+    return Scaffold(
+        backgroundColor: Colormyapp.maincolor,
+        appBar: AppBar(
+          centerTitle: true,
+          titleTextStyle:
+              const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          backgroundColor: Colormyapp.maincolor,
+          title: Text('Recently Played'),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  return ListtileWidget(
+                    context: context,
+                    index: index,
+                    songList: recentlysonglist,
+                  );
+                },
+                itemCount: recentlysonglist.length,
+              ),
+            )
+          ],
+        ));
+  }
+}
