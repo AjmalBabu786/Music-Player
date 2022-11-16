@@ -85,10 +85,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             builder: (BuildContext context, Playing playing) {
           final myAuido = find(widget.songList, playing.audio.assetAudioPath);
           return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // SizedBox(height: size.height * .10),
               Container(
-                height: size.height * 0.4,
-                width: size.width * 0.7,
+                height: size.width * 0.8,
+                width: size.width * 0.8,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(180),
                 ),
@@ -107,9 +109,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               ),
               Column(
                 children: [
-                  const SizedBox(
-                    height: 25,
-                  ),
+                  SizedBox(height: size.height * .07),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -175,8 +175,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 25,
+              SizedBox(
+                height: size.height * 0.03,
               ),
               assetsAudioPlayer.builderRealtimePlayingInfos(
                   builder: (context, playing) {
@@ -194,8 +194,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   ),
                 );
               }),
-              const SizedBox(
-                height: 20,
+              SizedBox(
+                height: size.height * 0.02,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -305,7 +305,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               ),
                             )),
                 ],
-              )
+              ),
             ],
           );
         }),
